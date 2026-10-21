@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>iPhone Interaktif - Contoh</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #2f3346, #0d0f15);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      padding: 12px;
+    }
+    .phone {
+      width: min(390px, 95vw);
+      aspect-ratio: 9 / 19.5;
+      max-height: calc(100dvh - 24px);
+      border-radius: 48px;
+      border: 10px solid #1f2025;
+      background: #000;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+    }
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      transition: opacity .3s, transform .3s;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.97); }
+
+    /* ===== LOCKSCREEN ===== */
+    #lockscreen {
+      background: url('https://drive.google.com/file/d/1qKT2cVxUqKnk3MIiAoSvAIicxOHulD9N/view?usp=drivesdk') center/cover;
+      color: white;
+      justify-content: space-between;
+      padding: 60px 20px 40px;
+    }
+    .lock-time {
+      text-align: center;
+      font-size: 72px;
+      font-weight: 200;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .lock-date {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 6px;
+      opacity: .9;
+    }
+    .notif {
+      background: rgba(255,255,255,.22);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .notif-icon {
+      width: 36px;
+      height: 36px;
+      background: #25d366;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .notif strong { display: block; font-size: 14px; }
+    .notif p { font-size: 13px; opacity: .9; margin-top: 2px; }
+    .swipe-hint {
+      text-align: center;
+      font-size: 14px;
+      opacity: .7;
+      margin-top: 20px;
+    }
+
+    /* ===== PASSCODE ===== */
+    #passcode {
+      background: rgba(30,35,45,.85);
+      backdrop-filter: blur(30px);
+      color: white;
+      align-items: center;
+      padding-top: 100px;
+    }
+    .pass-title { font-size: 17px; margin-bottom: 30px; }
+    .dots { display: flex; gap: 18px; margin-bottom: 40px; }
+    .dot {
+      width: 14px; height: 14px;
+      border: 1.5px solid white;
+      border-radius: 50%;
+    }
+    .dot.filled { background: white; }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 78px);
+      gap: 18px;
+      justify-content: center;
+    }
+    .key {
+      width: 78px; height: 78px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.15);
+      color: white;
+      font-size: 32px;
+      cursor: pointer;
+    }
+    .key:active { background: rgba(255,255,255,.35); }
+    .key.empty { visibility: hidden; }
+
+    /* ===== HOME ===== */
+    #home {
+      background: linear-gradient(160deg, #1c1c2e, #0f0f18);
+      color: white;
+      padding: 70px 22px 30px;
+    }
+    .home-time { font-size: 16px; opacity: .8; margin-bottom: 30px; }
+    .apps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px 12px;
+    }
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .app-icon {
+      width: 60px; height: 60px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background: #fff;
+    }
+    .app span { font-size: 11px; }
+
+    /* ===== WHATSAPP ===== */
+    #whatsapp {
+      background: #efeae2;
+      color: #111;
+    }
+    .wa-header {
+      background: #075e54;
+      color: white;
+      padding: 50px 12px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wa-header img {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .wa-header .back {
+      background: none; border: none;
+      color: white; font-size: 28px; cursor: pointer;
+    }
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bubble {
+      max-width: 75%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .bubble.them {
+      background: white;
+      align-self: flex-start;
+      border-top-left-radius: 4px;
+    }
+    .bubble.me {
+      background: #dcf8c6;
+      align-self: flex-end;
+      border-top-right-radius: 4px;
+    }
+    .wa-input {
+      background: #f0f0f0;
+      padding: 10px 12px 20px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .wa-input input {
+      flex: 1;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    /* ===== CALL ===== */
+    #call {
+      background: #1c1c1e;
+      color: white;
+      align-items: center;
+      justify-content: space-between;
+      padding: 80px 30px 50px;
+      text-align: center;
+    }
+    .call-avatar {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 20px auto;
+      border: 3px solid rgba(255,255,255,.3);
+    }
+    .call-name { font-size: 28px; font-weight: 500; }
+    .call-status { opacity: .7; margin-top: 8px; }
+    .call-actions {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      margin-top: auto;
+    }
+    .call-btn {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .decline { background: #ff3b30; color: white; }
+    .accept { background: #34c759; color: white; }
+
+    /* Home indicator */
+    .home-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 5px;
+      background: rgba(255,255,255,.4);
+      border-radius: 3px;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- LOCKSCREEN -->
+  <div id="lockscreen" class="screen">
+    <div>
+      <div class="lock-date" id="lockDate">Kamis, 22 Oktober</div>
+      <div class="lock-time" id="lockTime">18:00</div>
+    </div>
+    <div>
+      <div class="notif" onclick="showPasscode()">
+        <div class="notif-icon">💬</div>
+        <div>
+          <strong>babyy</strong>
+          <p>babyyy kamu lagi dimana?</p>
+        </div>
+      </div>
+      <div class="notif" onclick="showPasscode()">
+        <div class="notif-icon">💬</div>
+        <div>
+          <strong>babyy</strong>
+          <p>jad mau jemput aku gak kamu?</p>
+        </div>
+      </div>
+      <p class="swipe-hint">Ketuk notifikasi atau ketuk di sini untuk buka →</p>
+      <div style="height:20px" onclick="showPasscode()"></div>
+    </div>
+  </div>
+
+  <!-- PASSCODE -->
+  <div id="passcode" class="screen hidden">
+    <div class="pass-title">2704</div>
+    <div class="dots" id="dots">
+      <div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="press(1)">1</button>
+      <button class="key" onclick="press(2)">2</button>
+      <button class="key" onclick="press(3)">3</button>
+      <button class="key" onclick="press(4)">4</button>
+      <button class="key" onclick="press(5)">5</button>
+      <button class="key" onclick="press(6)">6</button>
+      <button class="key" onclick="press(7)">7</button>
+      <button class="key" onclick="press(8)">8</button>
+      <button class="key" onclick="press(9)">9</button>
+      <button class="key empty"></button>
+      <button class="key" onclick="press(0)">0</button>
+      <button class="key" onclick="clearPass()">⌫</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen hidden">
+    <div class="home-time" id="homeTime">15:42</div>
+    <div class="apps">
+      <div class="app" onclick="openWA()">
+        <div class="app-icon" style="background:#25d366">💬</div>
+        <span>WhatsApp</span>
+      </div>
+      <div class="app" onclick="incomingCall()">
+        <div class="app-icon" style="background:#34c759">📞</div>
+        <span>Telepon</span>
+      </div>
+      <div class="app">
+        <div class="app-icon" style="background:#ff3b30">📷</div>
+        <span>Kamera</span>
+      </div>
+      <div class="app">
+        <div class="app-icon" style="background:#5856d6">🎵</div>
+        <span>Musik</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHATSAPP -->
+  <div id="whatsapp" class="screen hidden">
+    <div class="wa-header">
+      <button class="back" onclick="goHome()">‹</button>
+      <img src="https://drive.google.com/file/d/1LSnWEq1H8wadRmC5MIAfu5baGawZkO0V/view?usp=drivesdk" alt="avatar">
+      <div>
+        <strong>babyy</strong><br>
+        <small style="opacity:.8">online</small>
+      </div>
+    </div>
+    <div class="chat" id="chatBox">
+      <div class="bubble them">jadinkan kita maun pergi??</div>
+      <div class="bubble me">jadi sayanggg</div>
+      <div class="bubble me">bentar ya aku masih dijalan nih lampu merah</div>
+      <div class="bubble them">akhirnya balas, okayy kamu hati hati jangan ngebut kamu bukan pembalap</div>
+      <div class="bubble me">iya sayang ini aku jalan ya bentar kagi aku sampai</div>
+      <div class="bubble them">okay sayangg🧡</div>
+      <div class="bubble me">🧡</div>
+    </div>
+    <div class="wa-input">
+      <input type="text" placeholder="Ketik pesan..." id="msgInput" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()" style="background:#25d366;border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer">↑</button>
+    </div>
+  </div>
+
+  <!-- CALL -->
+  <div id="call" class="screen hidden">
+    <div>
+      <div class="call-status" id="callStatus">Panggilan Masuk...</div>
+      <img class="call-avatar" src="https://drive.google.com/file/d/1LSnWEq1H8wadRmC5MIAfu5baGawZkO0V/view?usp=drivesdk" alt="Reinar">
+      <div class="call-name">babyy</div>
+      <div class="call-status">seluler</div>
+    </div>
+    <div class="call-actions">
+      <button class="call-btn decline" onclick="endCall()">✕</button>
+      <button class="call-btn accept" onclick="answerCall()">☎</button>
+    </div>
+  </div>
+
+  <div class="home-bar"></div>
+</div>
+
+<script>
+  // ===== Waktu real-time =====
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const time = `${h}:${m}`;
+    document.getElementById('lockTime').textContent = time;
+    document.getElementById('homeTime').textContent = time;
+
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    document.getElementById('lockDate').textContent =
+      `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ===== Navigasi layar =====
+  function hideAll() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  }
+  function showPasscode() {
+    hideAll();
+    document.getElementById('passcode').classList.remove('hidden');
+    entered = '';
+    updateDots();
+  }
+  function goHome() {
+    hideAll();
+    document.getElementById('home').classList.remove('hidden');
+  }
+  function openWA() {
+    hideAll();
+    document.getElementById('whatsapp').classList.remove('hidden');
+  }
+  function incomingCall() {
+    hideAll();
+    document.getElementById('call').classList.remove('hidden');
+    document.getElementById('callStatus').textContent = 'Panggilan Masuk...';
+  }
+  function answerCall() {
+    document.getElementById('callStatus').textContent = '00:30';
+  }
+  function endCall() {
+    goHome();
+  }
+
+  // ===== Passcode (kode: 2704) =====
+  let entered = '';
+  const CORRECT = '2704';
+
+  function press(num) {
+    if (entered.length >= 4) return;
+    entered += num;
+    updateDots();
+    if (entered.length === 4) {
+      setTimeout(() => {
+        if (entered === CORRECT) {
+          goHome();
+        } else {
+          // salah → getar dikit
+          document.getElementById('dots').style.transform = 'translateX(-8px)';
+          setTimeout(() => document.getElementById('dots').style.transform = 'translateX(8px)', 50);
+          setTimeout(() => document.getElementById('dots').style.transform = '', 100);
+          entered = '';
+          updateDots();
+        }
+      }, 200);
+    }
+  }
+  function clearPass() {
+    entered = entered.slice(0, -1);
+    updateDots();
+  }
+  function updateDots() {
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('filled', i < entered.length);
+    });
+  }
+
+  // ===== Kirim pesan =====
+  function sendMsg() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble me';
+    bubble.textContent = text;
+    document.getElementById('chatBox').appendChild(bubble);
+    input.value = '';
+    bubble.scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
